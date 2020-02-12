@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>RESTful API POST</title>
+    　<h1>RESTful API demo client</h1>
+</head>
+<body>
+    <script type="text/javascript" language="javascript">
+        var xhr = new XMLHttpRequest();
+
+
+	xhr.onloadstart = function ( event ) {
+	}
+
+	xhr.addEventListener( "load", function ( event ) {
+		document.getElementById( "result" ).textContent = xhr.response ;
+	} ) ;
+
+	function appendText ( text ) {
+		document.getElementById( "command" ).appendChild( document.createTextNode( text ) ) ;
+	}
+
+        function onSendButtonClick() {
+            var username = "test_user";
+            var password = "clusterpro";
+            var method = "http";
+            var ipaddr = document.forms.rest_form.id_tb_ip.value;
+            var port = "29009";
+            var grpname = "failoverA";
+            var srvname = document.forms.rest_form.id_tb_srvname.value;
+            var act = document.forms.rest_form.id_sel_act.value;
+　　　　　  var url = "";
+            var param = {};
+            var j_param;
+            var auth;
+            var reqparamflg = 0;
+
+	    if (ipaddr.length == 0) {
+		appendText( "[error] Please enter IP Address." + "\n" ) ;
+	        return;
+	    }
+            
+            if (act == "grpstart") {
+                if (srvname.length == 0) {
+                    appendText( "[error] Please enter servername." + "\n" ) ;
+                    return;
+                }
+            }
+
+            /* cluster start */
+            if (act == "clsstart") {
+　　　　　　　　url = method + "://" + ipaddr + ":" + port + "/api/v1/cluster" + "/" + "start";
+            }
+
+            /* cluster stop */
+            if (act == "clsstop") {
+　　　　　　　　url = method + "://" + ipaddr + ":" + port + "/api/v1/cluster" + "/" + "stop";
+            }
+
+            /* group start */
+            if (act == "grpstart") {
+		param.target = srvname;
+		reqparamflg = 1;
+                url = method + "://" + ipaddr + ":" + port + "/api/v1/groups/" + grpname + "/" + "start";
+            }
+
+            /* group stop */
+            if (act == "grpstop") {
+                url = method + "://" + ipaddr + ":" + port + "/api/v1/groups/" + grpname + "/" + "stop";
+            }
+
+            /* group move */
+            if (act == "grpmove") {
+                url = method + "://" + ipaddr + ":" + port + "/api/v1/groups/" + grpname + "/" + "move";
+                if (srvname.length != 0) {
+			param.target = srvname;
+			reqparamflg = 1;
+		}
+            }
+            
+            j_param = JSON.stringify( param );
+            appendText( "curl -u test_user:clusterpro -X POST" + " " + url + "\n" );
+
+            auth = username + ":" + password;
+
+            xhr.open( "POST", url, true) ;
+            xhr.withCredentials = true;
+            xhr.setRequestHeader("Authorization", "Basic " + window.btoa(auth));
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            if (reqparamflg == 1) {
+                xhr.send(j_param);
+            } else {
+                xhr.send();
+            }
+
+        }
+    </script>
+    <style type="text/css">
+	.button {
+	  display       : inline-block;
+	  border-radius : 5%;          /* 角丸       */
+	  font-size     : 18pt;        /* 文字サイズ */
+	  text-align    : center;      /* 文字位置   */
+	  cursor        : pointer;     /* カーソル   */
+	  padding       : 7px 21px;   /* 余白       */
+	  background    : #000066;     /* 背景色     */
+	  color         : #ffffff;     /* 文字色     */
+	  line-height   : 1em;         /* 1行の高さ  */
+	  transition    : .3s;         /* なめらか変化 */
+	  border        : 2px solid #000066;    /* 枠の指定 */
+	}
+	.button:hover {
+	  box-shadow    : none;        /* カーソル時の影消去 */
+	  color         : #000066;     /* 背景色     */
+	  background    : #ffffff;     /* 文字色     */
+	}
+	</style>
+
+    <form name="form1" id="rest_form" action="">
+        <select name="sel_act" id="id_sel_act">
+           <option value="clsstart">クラスタ開始</option>
+           <option value="clsstop">クラスタ停止</option>
+           <option value="grpstart">グループ起動</option>
+           <option value="grpstop">グループ停止</option>
+           <option value="grpmove">グループ移動</option>
+         </select>
+
+        <p>ＩＰアドレス　：　<input name="tb_ip" id="id_tb_ip" type="text" value="" /></p>
+        <h4>　　　グループ起動の場合入力してください</h4>
+        <p>
+            <p>　　　サーバ名　  ：　<input name="tb_srvname" id="id_tb_srvname" type="text" value="" /></p>
+        </p>
+	<br><br><br>
+	<input type="button" value="実行" onclick="onSendButtonClick();"/ class="button">
+	<input type="image" src="C:\tools\image\kurara3.png" VALUE="reload"onClick="window.location.reload(); "style="position: absolute; right: 0px; top: 0px"/>
+    </form>
+    <hr>
+    <p>RESTful API command:<span id="command"></span></p>
+    <p>result:<span id="result"></span></p>
+</body>
+</html>
